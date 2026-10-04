@@ -51,8 +51,8 @@ class AuthController {
 
   updateProfile = asyncHandler(async (req, res) => {
     // Only allow updating certain fields (prevent role override)
-    const { name, contact, dob, address, photo } = req.body;
-    const user = await authService.updateProfile(req.user.id, { name, contact, dob, address, photo });
+    const { name, contact, dob, address, photo, password } = req.body;
+    const user = await authService.updateProfile(req.user.id, { name, contact, dob, address, photo, password });
     res.status(200).json(new ApiResponse(200, user, "Profile updated successfully"));
   });
 }

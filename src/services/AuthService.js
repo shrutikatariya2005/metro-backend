@@ -77,9 +77,24 @@ class AuthService {
   }
 
   async updateProfile(userId, data) {
-    const user = await userRepository.updateById(userId, data);
+    const user = await userRepository.findById(userId);
     if (!user) throw new ApiError(404, "User not found");
-    return user;
+    
+    // Convert to mongoose doc to trigger save hook
+    const doc = await userRepository.model.findById(userId);
+    
+    const { password, ...otherData } = data;
+    
+    // Update simple fields
+    Object.assign(doc, otherData);
+    
+    // Update password if provided
+    if (password) {
+      doc.passwordHash = password;
+    }
+    
+    await doc.save();
+    return doc.toJSON();
   }
 }
 
