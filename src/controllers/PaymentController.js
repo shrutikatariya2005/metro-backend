@@ -78,43 +78,63 @@ class PaymentController {
       throw new ApiError(400, "Payment verification failed. Invalid signature.");
     }
 
-    const booking = await bookingRepository.updateById(bookingId, {
+    await bookingRepository.updateById(bookingId, {
       status: "confirmed",
       paymentId: razorpay_payment_id,
       orderId: razorpay_order_id,
     });
 
+    // Populate user and route with stations so MailService gets email and station names
+    const booking = await bookingRepository.findById(bookingId, [
+      { path: "user", select: "name email" },
+      { path: "route", populate: [{ path: "sourceStation" }, { path: "destinationStation" }] }
+    ]);
+
     if (!booking) throw new ApiError(404, "Booking not found");
 
     const ticket = await ticketService.issueTicket(bookingId);
 
-    // Generate QR code for ticket validation & send email asynchronously
-    const qrData = JSON.stringify({
-      ticketRef: ticket.ticketRef,
-      bookingRef: booking.bookingRef,
-      validUntil: ticket.validUntil,
-      status: ticket.status,
-    });
+    // Resolve user email
+    const recipientEmail = booking.user?.email || req.user?.email;
 
-    QRCode.toDataURL(qrData)
-      .then((qrCodeBase64) => {
-        const userEmail = req.user?.email || booking.user?.email;
-        if (userEmail) {
-          mailService.sendTicketEmail(
-            userEmail,
-            booking,
-            ticket.ticketRef,
-            qrCodeBase64,
-            ticket.ticketValidUntil || ticket.validUntil
-          );
-        }
-      })
-      .catch((err) => {
-        console.error("Error generating ticket QR code for email:", err);
+    // Format route station names for email
+    const bookingForMail = {
+      ...booking,
+      fromStation: booking.route?.sourceStation?.stationName || "Metro Station",
+      toStation: booking.route?.destinationStation?.stationName || "Metro Station",
+      passengers: booking.passengerCount,
+      fareAmount: booking.fareAmount
+    };
+
+    // Generate QR code for ticket validation & send email
+    if (recipientEmail) {
+      const qrData = JSON.stringify({
+        ticketRef: ticket.ticketRef,
+        bookingRef: booking.bookingRef,
+        validUntil: ticket.validUntil,
+        status: ticket.status,
       });
+
+      try {
+        const qrCodeBase64 = await QRCode.toDataURL(qrData);
+        console.log(`⏳ Attempting to send ticket QR email to: ${recipientEmail}...`);
+        await mailService.sendTicketEmail(
+          recipientEmail,
+          bookingForMail,
+          ticket.ticketRef,
+          qrCodeBase64,
+          ticket.validUntil
+        );
+      } catch (err) {
+        console.error("❌ Failed to process ticket email:", err);
+      }
+    } else {
+      console.warn("⚠️ Warning: Could not resolve recipient email for ticket dispatch.");
+    }
 
     res.status(200).json(new ApiResponse(200, { booking, ticket }, "Payment successful! Booking confirmed and ticket QR sent via email."));
   });
+
 }
 
 export default new PaymentController();
