@@ -1,11 +1,12 @@
-// src/controllers/PaymentController.js
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import QRCode from "qrcode";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import bookingRepository from "../repositories/BookingRepository.js";
 import ticketService from "../services/TicketService.js";
+import mailService from "../services/MailService.js";
 
 /**
  * Get a Razorpay instance lazily — only after .env has been loaded.
@@ -87,8 +88,34 @@ class PaymentController {
 
     const ticket = await ticketService.issueTicket(bookingId);
 
-    res.status(200).json(new ApiResponse(200, { booking, ticket }, "Payment successful! Booking confirmed."));
+    // Generate QR code for ticket validation & send email asynchronously
+    const qrData = JSON.stringify({
+      ticketRef: ticket.ticketRef,
+      bookingRef: booking.bookingRef,
+      validUntil: ticket.validUntil,
+      status: ticket.status,
+    });
+
+    QRCode.toDataURL(qrData)
+      .then((qrCodeBase64) => {
+        const userEmail = req.user?.email || booking.user?.email;
+        if (userEmail) {
+          mailService.sendTicketEmail(
+            userEmail,
+            booking,
+            ticket.ticketRef,
+            qrCodeBase64,
+            ticket.ticketValidUntil || ticket.validUntil
+          );
+        }
+      })
+      .catch((err) => {
+        console.error("Error generating ticket QR code for email:", err);
+      });
+
+    res.status(200).json(new ApiResponse(200, { booking, ticket }, "Payment successful! Booking confirmed and ticket QR sent via email."));
   });
 }
 
 export default new PaymentController();
+
