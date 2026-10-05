@@ -17,10 +17,17 @@ class TicketService {
     return ticket;
   }
 
-  async cancelTicket(ticketRef) {
-    const ticket = await ticketRepository.findOne({ ticketRef });
-    if (!ticket) throw new ApiError(404, "Ticket not found");
-    if (ticket.status === "cancelled") throw new ApiError(400, "Ticket is already cancelled");
+  async cancelTicket(ticketRefOrQuery) {
+    // Support being called with a query object e.g. { booking: bookingId }
+    // or a plain string ticketRef
+    let ticket;
+    if (typeof ticketRefOrQuery === "string") {
+      ticket = await ticketRepository.findOne({ ticketRef: ticketRefOrQuery });
+    } else {
+      ticket = await ticketRepository.findOne(ticketRefOrQuery);
+    }
+    if (!ticket) return null; // Gracefully ignore if ticket not found
+    if (ticket.status === "cancelled") return ticket; // Already cancelled, no-op
     return ticketRepository.updateById(ticket._id, { status: "cancelled" });
   }
 }
