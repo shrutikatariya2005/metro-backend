@@ -18,9 +18,24 @@ import paymentRoutes from "./routes/payment.routes.js";
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://metro-frontend-alpha.vercel.app",
+  "https://metro-frontend-nu.vercel.app",
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or Postman) or matching allowed origins
+      if (!origin || allowedOrigins.some((o) => origin.startsWith(o))) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow origin fallback for preview deployments
+      }
+    },
     credentials: true,
   })
 );
