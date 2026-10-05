@@ -14,16 +14,7 @@ class BookingService {
     // 2. Calculate fare (delegates to FareService — the ONLY place fare math happens)
     const fareDetails = await fareService.calculateFare(routeId, passengerCount);
 
-    // 3. Check for duplicate booking on same date for same user/route
-    const duplicate = await bookingRepository.findOne({
-      user: userId,
-      route: routeId,
-      travelDate,
-      status: { $ne: "cancelled" },
-    });
-    if (duplicate) throw new ApiError(409, "You already have a booking for this route on this date");
-
-    // 4. Create the booking record (starts as pending_payment until Razorpay confirms)
+    // 3. Create the booking record (starts as pending_payment until Razorpay confirms)
     const bookingRef = generateReference("BKG");
     const booking = await bookingRepository.create({
       bookingRef,
@@ -36,7 +27,7 @@ class BookingService {
       status: "pending_payment",
     });
 
-    // 5. Return booking + fare details so frontend can initiate payment
+    // 4. Return booking + fare details so frontend can initiate payment
     return { booking, fareDetails };
   }
 
