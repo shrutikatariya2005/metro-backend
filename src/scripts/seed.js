@@ -109,11 +109,9 @@ const seedData = async () => {
       { name: "Pooja Iyer",      email: "pooja.iyer@gmail.com",      contact: "9998887785", dob: "2002-01-14" },
     ];
 
-    // Hash password once and reuse (all passengers use "password")
-    const hashedPw = await bcrypt.hash("password", 12);
     const passengers = [];
     for (const p of passengersData) {
-      const user = await User.create({ ...p, passwordHash: hashedPw, role: "passenger", isActive: true });
+      const user = await User.create({ ...p, passwordHash: "password", role: "passenger", isActive: true });
       passengers.push(user);
     }
     console.log(`👥  ${passengers.length} passenger accounts created.`);
