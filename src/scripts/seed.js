@@ -89,25 +89,41 @@ const seedData = async () => {
     console.log("👤  Staff accounts created.");
 
     // ════════════════════════════════════════════════════════════════════════
-    // PASSENGER USERS — realistic Surat names
+    // PASSENGER USERS — realistic Surat names & documents
     // ════════════════════════════════════════════════════════════════════════
+    const generatePAN = () => {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const nums = "0123456789";
+      let pan = "";
+      for (let i = 0; i < 5; i++) pan += chars.charAt(Math.floor(Math.random() * chars.length));
+      for (let i = 0; i < 4; i++) pan += nums.charAt(Math.floor(Math.random() * nums.length));
+      pan += chars.charAt(Math.floor(Math.random() * chars.length));
+      return pan;
+    };
+
+    const generateAadhar = () => {
+      let aadhar = "";
+      for (let i = 0; i < 12; i++) aadhar += Math.floor(Math.random() * 10);
+      return aadhar;
+    };
+
     const passengersData = [
-      { name: "Priya Sharma",    email: "priya.sharma@gmail.com",    contact: "9998887771", dob: "1995-03-14" },
-      { name: "Rahul Patel",     email: "rahul.patel@gmail.com",     contact: "9998887772", dob: "1990-07-22" },
-      { name: "Anjali Mehta",    email: "anjali.mehta@gmail.com",    contact: "9998887773", dob: "1998-11-05" },
-      { name: "Vikram Desai",    email: "vikram.desai@gmail.com",    contact: "9998887774", dob: "1985-01-30" },
-      { name: "Kavya Joshi",     email: "kavya.joshi@gmail.com",     contact: "9998887775", dob: "2000-06-18" },
-      { name: "Amit Shah",       email: "amit.shah@gmail.com",       contact: "9998887776", dob: "1992-09-25" },
-      { name: "Nisha Trivedi",   email: "nisha.trivedi@gmail.com",   contact: "9998887777", dob: "1997-04-12" },
-      { name: "Rohan Kapoor",    email: "rohan.kapoor@gmail.com",    contact: "9998887778", dob: "1988-12-08" },
-      { name: "Sonal Rao",       email: "sonal.rao@gmail.com",       contact: "9998887779", dob: "2001-02-27" },
-      { name: "Deepak Gupta",    email: "deepak.gupta@gmail.com",    contact: "9998887780", dob: "1993-08-15" },
-      { name: "Meena Pillai",    email: "meena.pillai@gmail.com",    contact: "9998887781", dob: "1996-05-03" },
-      { name: "Arjun Nair",      email: "arjun.nair@gmail.com",      contact: "9998887782", dob: "1989-10-20" },
-      { name: "Tanvi Singh",     email: "tanvi.singh@gmail.com",     contact: "9998887783", dob: "1999-07-09" },
-      { name: "Karan Malhotra",  email: "karan.malhotra@gmail.com",  contact: "9998887784", dob: "1994-03-28" },
-      { name: "Pooja Iyer",      email: "pooja.iyer@gmail.com",      contact: "9998887785", dob: "2002-01-14" },
-    ];
+      { name: "Priya Sharma",    email: "priya.sharma@gmail.com",    contact: "9998887771", dob: "1995-03-14", address: "Vesu, Surat", qualification: "B.Tech" },
+      { name: "Rahul Patel",     email: "rahul.patel@gmail.com",     contact: "9998887772", dob: "1990-07-22", address: "Adajan, Surat", qualification: "MBA" },
+      { name: "Anjali Mehta",    email: "anjali.mehta@gmail.com",    contact: "9998887773", dob: "1998-11-05", address: "Varachha, Surat", qualification: "B.Com" },
+      { name: "Vikram Desai",    email: "vikram.desai@gmail.com",    contact: "9998887774", dob: "1985-01-30", address: "Piplod, Surat", qualification: "Ph.D" },
+      { name: "Kavya Joshi",     email: "kavya.joshi@gmail.com",     contact: "9998887775", dob: "2000-06-18", address: "Katargam, Surat", qualification: "B.Sc" },
+      { name: "Amit Shah",       email: "amit.shah@gmail.com",       contact: "9998887776", dob: "1992-09-25", address: "City Light, Surat", qualification: "M.Com" },
+      { name: "Nisha Trivedi",   email: "nisha.trivedi@gmail.com",   contact: "9998887777", dob: "1997-04-12", address: "Udhna, Surat", qualification: "B.A" },
+      { name: "Rohan Kapoor",    email: "rohan.kapoor@gmail.com",    contact: "9998887778", dob: "1988-12-08", address: "Althan, Surat", qualification: "B.E" },
+      { name: "Sonal Rao",       email: "sonal.rao@gmail.com",       contact: "9998887779", dob: "2001-02-27", address: "Bhatar, Surat", qualification: "BBA" },
+      { name: "Deepak Gupta",    email: "deepak.gupta@gmail.com",    contact: "9998887780", dob: "1993-08-15", address: "Pal, Surat", qualification: "MCA" },
+      { name: "Meena Pillai",    email: "meena.pillai@gmail.com",    contact: "9998887781", dob: "1996-05-03", address: "Dumas Road, Surat", qualification: "B.Tech" },
+      { name: "Arjun Nair",      email: "arjun.nair@gmail.com",      contact: "9998887782", dob: "1989-10-20", address: "Rander, Surat", qualification: "MBA" },
+      { name: "Tanvi Singh",     email: "tanvi.singh@gmail.com",     contact: "9998887783", dob: "1999-07-09", address: "Amroli, Surat", qualification: "B.Com" },
+      { name: "Karan Malhotra",  email: "karan.malhotra@gmail.com",  contact: "9998887784", dob: "1994-03-28", address: "Athwa Lines, Surat", qualification: "B.Arch" },
+      { name: "Pooja Iyer",      email: "pooja.iyer@gmail.com",      contact: "9998887785", dob: "2002-01-14", address: "Majura Gate, Surat", qualification: "B.Sc" },
+    ].map(p => ({ ...p, pan: generatePAN(), aadhar: generateAadhar() }));
 
     const passengers = [];
     for (const p of passengersData) {
@@ -244,7 +260,6 @@ const seedData = async () => {
 
     // ════════════════════════════════════════════════════════════════════════
     // BOOKINGS · TICKETS · PAYMENTS · FEEDBACK
-    // Spread across last 30 days to give meaningful report graphs
     // ════════════════════════════════════════════════════════════════════════
     const paymentMethods = ["upi", "card", "upi", "wallet", "cash"];
     const feedbackComments = [
@@ -270,27 +285,26 @@ const seedData = async () => {
     // Track which (user+route+date) combos we've used to avoid duplicate constraint
     const usedCombos = new Set();
 
-    // Generate 80 confirmed bookings spread across 30 days
-    const bookingTargets = 80;
+    // Generate 500 confirmed bookings spread across 60 days
+    const bookingTargets = 500;
     let attempts = 0;
 
-    while (totalBookings < bookingTargets && attempts < 500) {
+    while (totalBookings < bookingTargets && attempts < 3000) {
       attempts++;
       const passenger = pick(passengers);
       const routeEntry = pick(routes);
-      const daysAgo = randInt(0, 29);
+      const daysAgo = randInt(0, 59);
       const tDate = pastDate(daysAgo);
 
-      const comboKey = `${passenger._id}-${routeEntry.route._id}-${tDate}`;
+      const comboKey = `${passenger._id}-${routeEntry.route._id}-${tDate}-${totalBookings}`;
       if (usedCombos.has(comboKey)) continue;
       usedCombos.add(comboKey);
 
-      const passengerCount = randInt(1, 3);
+      const passengerCount = randInt(1, 4);
       const fare = slabFare(routeEntry.distKm) * passengerCount;
       const bookingRef = makeRef("BKG");
 
-      // Create the booking with a createdAt in the past
-      const createdAt = pastTimestamp(daysAgo, randInt(1, 8));
+      const createdAt = pastTimestamp(daysAgo, randInt(1, 14));
       const booking = await Booking.create({
         bookingRef,
         user: passenger._id,
@@ -306,7 +320,6 @@ const seedData = async () => {
         updatedAt: createdAt,
       });
 
-      // Issue ticket — validUntil is 2h after creation (historical tickets are expired which is correct)
       const validUntil = new Date(createdAt.getTime() + 2 * 60 * 60 * 1000);
       const ticket = await Ticket.create({
         ticketRef: makeRef("TKT"),
@@ -319,7 +332,6 @@ const seedData = async () => {
       });
       totalTickets++;
 
-      // Payment record
       await Payment.create({
         booking: booking._id,
         amount: fare,
@@ -331,9 +343,8 @@ const seedData = async () => {
       });
       totalPayments++;
 
-      // 60% chance of leaving feedback
-      if (Math.random() < 0.6) {
-        const rating = pick([3, 4, 4, 4, 5, 5, 5]); // weighted towards positive
+      if (Math.random() < 0.3) {
+        const rating = pick([3, 4, 4, 4, 5, 5, 5]); 
         await Feedback.create({
           user: passenger._id,
           rating,
@@ -347,16 +358,14 @@ const seedData = async () => {
       totalBookings++;
     }
 
-    // Add 10 pending_payment bookings (no tickets) for today
-    for (let i = 0; i < 10; i++) {
+    // Add 15 pending_payment bookings for today
+    for (let i = 0; i < 15; i++) {
       const passenger = pick(passengers);
       const routeEntry = pick(routes);
       const passengerCount = randInt(1, 2);
       const fare = slabFare(routeEntry.distKm) * passengerCount;
       const bookingRef = makeRef("BKG");
-      const comboKey = `${passenger._id}-${routeEntry.route._id}-${todayStr()}-pending-${i}`;
-      usedCombos.add(comboKey);
-
+      
       await Booking.create({
         bookingRef,
         user: passenger._id,

@@ -123,6 +123,7 @@ class ReportService {
   }
 
   async getFeedbackStats() {
+    const feedbackRepository = (await import("../repositories/FeedbackRepository.js")).default;
     const all = await feedbackRepository.findAll();
     if (all.length === 0) return { averageRating: 0, totalFeedback: 0, distribution: {} };
 
@@ -138,6 +139,34 @@ class ReportService {
       totalFeedback: all.length,
       distribution,
     };
+  }
+
+  async getDetailedBookings(startDate, endDate) {
+    const matchStage = { status: { $ne: "cancelled" } };
+    if (startDate || endDate) {
+      matchStage.travelDate = {};
+      if (startDate) matchStage.travelDate.$gte = startDate;
+      if (endDate) matchStage.travelDate.$lte = endDate;
+    }
+
+    const bookings = await bookingRepository.model
+      .find(matchStage)
+      .populate("user", "name email contact aadhar pan qualification address")
+      .populate({ path: "route", populate: [{ path: "sourceStation" }, { path: "destinationStation" }] })
+      .populate("schedule")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Fetch payments to attach payment method
+    const Payment = (await import("../models/Payment.model.js")).default;
+    const bookingIds = bookings.map((b) => b._id);
+    const payments = await Payment.find({ booking: { $in: bookingIds } }).lean();
+    const paymentMap = new Map(payments.map((p) => [p.booking.toString(), p]));
+
+    return bookings.map((b) => ({
+      ...b,
+      paymentInfo: paymentMap.get(b._id.toString()) || null,
+    }));
   }
 }
 

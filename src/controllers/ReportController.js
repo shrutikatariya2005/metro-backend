@@ -23,6 +23,12 @@ class ReportController {
     res.status(200).json(new ApiResponse(200, data));
   });
 
+  getDetailedBookings = asyncHandler(async (req, res) => {
+    const { startDate, endDate } = req.query;
+    const data = await reportService.getDetailedBookings(startDate, endDate);
+    res.status(200).json(new ApiResponse(200, data));
+  });
+
   getFeedbackStats = asyncHandler(async (_req, res) => {
     const stats = await reportService.getFeedbackStats();
     res.status(200).json(new ApiResponse(200, stats));

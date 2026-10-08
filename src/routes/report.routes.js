@@ -10,6 +10,7 @@ router.use(verifyJWT, authorizeRoles("manager", "admin"));
 router.get("/summary", reportController.getSummary);
 router.get("/popular-routes", reportController.getPopularRoutes);
 router.get("/revenue", reportController.getRevenueByDate);
+router.get("/detailed-bookings", reportController.getDetailedBookings);
 router.get("/feedback-stats", reportController.getFeedbackStats);
 
 export default router;
