@@ -1,8 +1,4 @@
 // src/services/ReportService.js
-// ══════════════════════════════════════════════════════════════════════════════
-// All report / statistics business logic lives here.
-// Managers call these endpoints — no raw DB queries outside this service.
-// ══════════════════════════════════════════════════════════════════════════════
 import bookingRepository from "../repositories/BookingRepository.js";
 import userRepository from "../repositories/UserRepository.js";
 import stationRepository from "../repositories/StationRepository.js";
@@ -10,16 +6,20 @@ import routeRepository from "../repositories/RouteRepository.js";
 import feedbackRepository from "../repositories/FeedbackRepository.js";
 
 class ReportService {
-  /**
-   * High-level summary: counts + revenue.
-   */
-  async getSummary() {
+  async getSummary(startDate, endDate) {
+    const bookingMatch = { status: { $ne: "cancelled" } };
+    if (startDate || endDate) {
+      bookingMatch.travelDate = {};
+      if (startDate) bookingMatch.travelDate.$gte = startDate;
+      if (endDate) bookingMatch.travelDate.$lte = endDate;
+    }
+
     const [totalBookings, totalUsers, totalStations, totalRoutes, allBookings] = await Promise.all([
-      bookingRepository.count(),
-      userRepository.count({ role: "passenger" }),
+      bookingRepository.count(bookingMatch),
+      userRepository.count({ role: "passenger" }), // users are independent of this date range usually, or we can filter by createdAt
       stationRepository.count({ isActive: true }),
       routeRepository.count({ isActive: true }),
-      bookingRepository.findAll({ status: { $ne: "cancelled" } }),
+      bookingRepository.findAll(bookingMatch),
     ]);
 
     const totalRevenue = allBookings.reduce((sum, b) => sum + b.fareAmount, 0);
@@ -37,12 +37,16 @@ class ReportService {
     };
   }
 
-  /**
-   * Top routes ranked by booking count.
-   */
-  async getPopularRoutes(limit = 10) {
+  async getPopularRoutes(limit = 10, startDate, endDate) {
+    const matchStage = { status: { $ne: "cancelled" } };
+    if (startDate || endDate) {
+      matchStage.travelDate = {};
+      if (startDate) matchStage.travelDate.$gte = startDate;
+      if (endDate) matchStage.travelDate.$lte = endDate;
+    }
+
     const pipeline = [
-      { $match: { status: { $ne: "cancelled" } } },
+      { $match: matchStage },
       { $group: { _id: "$route", count: { $sum: 1 }, totalRevenue: { $sum: "$fareAmount" } } },
       { $sort: { count: -1 } },
       { $limit: limit },
@@ -89,16 +93,21 @@ class ReportService {
     return bookingRepository.aggregate(pipeline);
   }
 
-  /**
-   * Daily revenue breakdown (last N days).
-   */
-  async getRevenueByDate(days = 30) {
-    const since = new Date();
-    since.setDate(since.getDate() - days);
-    const sinceStr = since.toISOString().slice(0, 10); // "YYYY-MM-DD"
+  async getRevenueByDate(startDate, endDate) {
+    const matchStage = { status: { $ne: "cancelled" } };
+    if (startDate || endDate) {
+      matchStage.travelDate = {};
+      if (startDate) matchStage.travelDate.$gte = startDate;
+      if (endDate) matchStage.travelDate.$lte = endDate;
+    } else {
+      // Default to last 30 days if no range provided
+      const since = new Date();
+      since.setDate(since.getDate() - 30);
+      matchStage.travelDate = { $gte: since.toISOString().slice(0, 10) };
+    }
 
     const pipeline = [
-      { $match: { travelDate: { $gte: sinceStr }, status: { $ne: "cancelled" } } },
+      { $match: matchStage },
       {
         $group: {
           _id: "$travelDate",
@@ -113,9 +122,6 @@ class ReportService {
     return bookingRepository.aggregate(pipeline);
   }
 
-  /**
-   * Average feedback rating.
-   */
   async getFeedbackStats() {
     const all = await feedbackRepository.findAll();
     if (all.length === 0) return { averageRating: 0, totalFeedback: 0, distribution: {} };

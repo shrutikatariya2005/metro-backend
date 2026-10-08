@@ -4,20 +4,22 @@ import ApiResponse from "../utils/ApiResponse.js";
 import reportService from "../services/ReportService.js";
 
 class ReportController {
-  getSummary = asyncHandler(async (_req, res) => {
-    const summary = await reportService.getSummary();
+  getSummary = asyncHandler(async (req, res) => {
+    const { startDate, endDate } = req.query;
+    const summary = await reportService.getSummary(startDate, endDate);
     res.status(200).json(new ApiResponse(200, summary));
   });
 
   getPopularRoutes = asyncHandler(async (req, res) => {
     const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
-    const routes = await reportService.getPopularRoutes(limit);
+    const { startDate, endDate } = req.query;
+    const routes = await reportService.getPopularRoutes(limit, startDate, endDate);
     res.status(200).json(new ApiResponse(200, routes));
   });
 
   getRevenueByDate = asyncHandler(async (req, res) => {
-    const days = req.query.days ? parseInt(req.query.days, 10) : 30;
-    const data = await reportService.getRevenueByDate(days);
+    const { startDate, endDate } = req.query;
+    const data = await reportService.getRevenueByDate(startDate, endDate);
     res.status(200).json(new ApiResponse(200, data));
   });
 
