@@ -30,7 +30,7 @@ class BookingRepository extends BaseRepository {
   async findAllPopulated() {
     return this.model
       .find()
-      .populate("user", "name email")
+      .populate("user", "name email contact aadhar pan qualification address")
       .populate({ path: "route", populate: [{ path: "sourceStation" }, { path: "destinationStation" }] })
       .populate("schedule")
       .sort({ createdAt: -1 })
