@@ -293,7 +293,8 @@ const seedData = async () => {
       attempts++;
       const passenger = pick(passengers);
       const routeEntry = pick(routes);
-      const daysAgo = randInt(0, 59);
+      // 80% of bookings in the current month (0-15 days ago), 20% in the last 60 days
+      const daysAgo = Math.random() < 0.8 ? randInt(0, 15) : randInt(16, 59);
       const tDate = pastDate(daysAgo);
 
       const comboKey = `${passenger._id}-${routeEntry.route._id}-${tDate}-${totalBookings}`;
